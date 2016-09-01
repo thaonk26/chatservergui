@@ -34,7 +34,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtChatBox = new System.Windows.Forms.RichTextBox();
-            this.txtUserID = new System.Windows.Forms.TextBox();
+            this.checkListUser = new System.Windows.Forms.CheckedListBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -90,22 +90,24 @@
             this.txtChatBox.Size = new System.Drawing.Size(243, 218);
             this.txtChatBox.TabIndex = 5;
             this.txtChatBox.Text = "";
+            this.txtChatBox.TextChanged += new System.EventHandler(this.txtChatBox_TextChanged);
             // 
-            // txtUserID
+            // checkListUser
             // 
-            this.txtUserID.Location = new System.Drawing.Point(21, 27);
-            this.txtUserID.Multiline = true;
-            this.txtUserID.Name = "txtUserID";
-            this.txtUserID.Size = new System.Drawing.Size(100, 218);
-            this.txtUserID.TabIndex = 6;
-            this.txtUserID.TextChanged += new System.EventHandler(this.txtUserID_TextChanged);
+            this.checkListUser.FormattingEnabled = true;
+            this.checkListUser.Location = new System.Drawing.Point(22, 27);
+            this.checkListUser.Name = "checkListUser";
+            this.checkListUser.Size = new System.Drawing.Size(99, 214);
+            this.checkListUser.TabIndex = 7;
+            this.checkListUser.SelectedIndexChanged += new System.EventHandler(this.checkListUser_SelectedIndexChanged);
             // 
             // FormServer
             // 
+            this.AcceptButton = this.buttonSend;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(386, 295);
-            this.Controls.Add(this.txtUserID);
+            this.Controls.Add(this.checkListUser);
             this.Controls.Add(this.txtChatBox);
             this.Controls.Add(this.txtUser);
             this.Controls.Add(this.buttonSend);
@@ -129,7 +131,7 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem signOutToolStripMenuItem;
         private System.Windows.Forms.RichTextBox txtChatBox;
-        private System.Windows.Forms.TextBox txtUserID;
+        private System.Windows.Forms.CheckedListBox checkListUser;
     }
 }
 
