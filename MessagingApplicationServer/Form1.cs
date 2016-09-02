@@ -68,54 +68,6 @@ namespace MessagingApplicationServer
         {
             txtChatBox.Text += Environment.NewLine + mod;
         }
-        //private void StartServer()
-        //{
-        //    Action<string> DelegateModifyText = ThreadMod;
-        //    ServerListener.Start();
-        //    //socket.Bind(ip);
-        //    //socket.Listen(20);
-        //    Invoke(DelegateModifyText, "Server waiting for connection!");
-        //    //Socket client = socket.Accept();
-        //    //IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
-        //    //Invoke(DelegateModifyText, "Connected with " + clientEndPoint.Address + " at port \n" + clientEndPoint.Port);
-        //    clientSocket = ServerListener.AcceptTcpClient();
-        //    while (startUp)
-        //    {
-        //        try
-        //        {
-        //            NetworkStream networkStream = clientSocket.GetStream();                    
-        //            byte[] bytesFrom = new byte[1024];
-        //            //clientSocket = ServerListener.AcceptTcpClient();
-        //            //client.Receive(bytesFrom, 0);
-        //            networkStream.Read(bytesFrom, 0, bytesFrom.Length);
-        //            string dataFromClient = Encoding.ASCII.GetString(bytesFrom);
-        //            //dataFromClient = dataFromClient.Substring(0, dataFromClient.IndexOf("$"));
-        //            myHashTable.Add(dataFromClient, clientSocket);
-        //            //Invoke(DelegateModifyText,(dataFromClient + "Joined chat room");
-        //            //HandleClient client = new HandleClient();
-        //            //client.StartClient(clientSocket, dataFromClient, myHashTable);
-        //            Invoke(DelegateModifyText, "Server ready!");
-        //            string serverResponse = "Recieved! \n";
-        //            byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
-        //            //client.Send(sendBytes, 0);
-        //            networkStream.Write(sendBytes, 0, sendBytes.Length);
-        //            networkStream.Flush();
-        //            startUp = false;
-                    
-        //        }
-        //        catch
-        //        {
-        //            //StartServer();
-        //            ServerListener.Stop();
-        //            ServerListener.Start();
-        //            Invoke(DelegateModifyText, "Server waiting connections!");
-        //            clientSocket = ServerListener.AcceptTcpClient();
-        //            Invoke(DelegateModifyText, "Server ready!");
-        //        }
-        //    }
-        //    Thread thread = new Thread(GetMessage);
-        //    thread.Start();
-        //}
         private void SetupServer()
         {
             Action<string> DelegateModifyText = ThreadMod;
@@ -157,7 +109,7 @@ namespace MessagingApplicationServer
             }
             catch (SocketException)
             {
-                Invoke(DelegateModifyText, "Client forcefully disconnected");
+                //Invoke(DelegateModifyText, "Client forcefully disconnected");
                 ClientDisconnect();
                 current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
                 _listSocket.Remove(current);
@@ -236,6 +188,7 @@ namespace MessagingApplicationServer
         }
         private void ClientDisconnect()
         {
+            Action<string> DelegateModifyText = ThreadMod;
             string clearSocket = "";
             foreach(string name in dictionary.Keys) 
             {
@@ -254,6 +207,7 @@ namespace MessagingApplicationServer
                     clientList.RemoveAt(i);
                 }
             }
+            Invoke(DelegateModifyText, clearSocket.Substring(2, clearSocket.Length - 2) + " disconnected");
         }
         private void txtUser_TextChanged(object sender, EventArgs e)
         {
@@ -261,9 +215,10 @@ namespace MessagingApplicationServer
         }
         private void buttonSend_Click(object sender, EventArgs e)
         {
+            Action<string> DelegateModifyText = ThreadMod;
             string s = serverName + txtUser.Text;
             byte[] message = Encoding.ASCII.GetBytes(s);
-
+            Invoke(DelegateModifyText, s);
             foreach (string numKey in dictionary.Keys)
             {
                 for (int i = 1; i <= checkListUser.Items.Count; i++)
