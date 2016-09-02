@@ -110,7 +110,7 @@ namespace MessagingApplicationServer
             catch (SocketException)
             {
                 //Invoke(DelegateModifyText, "Client forcefully disconnected");
-                ClientDisconnect();
+                ClientDisconnect(current);
                 current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
                 _listSocket.Remove(current);
                 return;
@@ -186,13 +186,13 @@ namespace MessagingApplicationServer
             ////    }
             ////}).Start();
         }
-        private void ClientDisconnect()
+        private void ClientDisconnect(Socket socket)
         {
             Action<string> DelegateModifyText = ThreadMod;
             string clearSocket = "";
             foreach(string name in dictionary.Keys) 
             {
-                if (_listSocket.Count == dictionary.Count)              //if its not in here, remove it
+                if (dictionary[name] == socket)              //if its not in here, remove it
                 {
                     clearSocket = name;
                 }
