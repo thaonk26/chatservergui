@@ -34,7 +34,7 @@ namespace MessagingApplicationServer
         //TcpListener ServerListener = new TcpListener(ipAddress, PortNumber);
         //TcpClient clientSocket = default(TcpClient);
         //bool startUp = true;
-        public Dictionary<int, Socket> dictionary;
+        public Dictionary<string, Socket> dictionary;
         public Hashtable myHashTable = new Hashtable();
         //private int hashNumber = 0;        
         //IPEndPoint ip = new IPEndPoint(IPAddress.Any, PortNumber);
@@ -51,55 +51,19 @@ namespace MessagingApplicationServer
         {
             InitializeComponent();
             clientList = new List<SocketClient>();
-            dictionary = new Dictionary<int, Socket>();
+            dictionary = new Dictionary<string, Socket>();
             CheckForIllegalCrossThreadCalls = false;
             
         }
         public void SaveUser()
         {
 
-        }     
+        }
         private void FormServer_Load(object sender, EventArgs e)
-        {
+        { 
             Thread ThreadServer = new Thread(SetupServer);
             ThreadServer.Start();
-            //try
-            //{
-            //    serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            //    IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 12000);
-            //    serverSocket.Bind(ipEndPoint);
-            //    serverSocket.Listen(3);
-            //    serverSocket.BeginAccept(new AsyncCallback(OnAccept), null);
-            //}
-            //catch(Exception ex)
-            //{
-            //    MessageBox.Show(ex.Message, "SGSserverTCP", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
         }
-        //private void OnAccept(IAsyncResult ar)
-        //{
-        //    try
-        //    {
-        //        Socket clientSocket = serverSocket.EndAccept(ar);
-        //        serverSocket.BeginReceive(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(OnReceive), clientSocket);
-        //    }catch (Exception ex)
-        //    {
-        //        MessageBox.Show(ex.Message, "SGSserverTCP", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-
-        //}
-        //private void OnReceive(IAsyncResult ar)
-        //{
-        //    try
-        //    {
-        //        Socket clientSocket = (Socket)ar.AsyncState;
-        //        clientSocket.EndReceive(ar);
-                
-        //    }catch (Exception ex)
-        //    {
-        //        MessageBox.Show(ex.Message, "SGSserverTCP", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-        //}
         private void ThreadMod(string mod)
         {
             txtChatBox.Text += Environment.NewLine + mod;
@@ -177,19 +141,14 @@ namespace MessagingApplicationServer
             checkListUser.Items.Add(socket.RemoteEndPoint.ToString());
             _listSocket.Add(socket);
             socket.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
-            Invoke(DelegateModifyText, "Client connected, waiting for request...");
+            Invoke(DelegateModifyText, "Client connected");
             _serverSocket.BeginAccept(AcceptCallback, null);
         }
 
         private void ReceiveCallback(IAsyncResult AR)
         {
             Socket current = (Socket)AR.AsyncState;
-            //int counter = 1;
-            //dictionary.Add(counter, _serverSocket);
-            
             SocketClient client = new SocketClient(current);
-            //clientList.Add(client);
-            //clientList[0] = client; refer to client
             int received;
             Action<string> DelegateModifyText = ThreadMod;
             try
@@ -199,11 +158,11 @@ namespace MessagingApplicationServer
             catch (SocketException)
             {
                 Invoke(DelegateModifyText, "Client forcefully disconnected");
+                ClientDisconnect(current);
                 current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
                 _listSocket.Remove(current);
                 return;
             }
-
             byte[] recBuf = new byte[received];
             Array.Copy(_buffer, recBuf, received);
             string text = Encoding.ASCII.GetString(recBuf);
@@ -219,13 +178,16 @@ namespace MessagingApplicationServer
                         {
                             checkListUser.Items.RemoveAt(clientList.Count -1);
                             checkListUser.Items.Insert(0, text.Substring(2, text.Length - 2));
-                            dictionary.Add(clientList.Count, current);
+                            dictionary.Add(text, current);
+
                             string serverResponse = "Welcome to Nate's Server! \n";
                             byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
                             current.Send(sendBytes, 0, sendBytes.Length, 0);
                         }                    
                     }
                 }
+            }
+            current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);
                 //for (int i = 0; i < checkListUser.Items.Count; i++)
                 //{
                 //    if (checkListUser.GetItemChecked(i))
@@ -241,98 +203,56 @@ namespace MessagingApplicationServer
                 //}
                 //checkedItems = checkedItems.Substring(0, checkedItems.Length);
                 //txtUser.Text = checkedItems;
-            }
-            current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);
-            new Thread(() =>
-            {
-                while (true)
-                {
-                    byte[] sizeBuf = new byte[4];
-                    current.Receive(sizeBuf, 0, sizeBuf.Length, 0);
-                    int size = BitConverter.ToInt32(sizeBuf, 0);
-                    MemoryStream ms = new MemoryStream();  //holds data for buffer we recieve
-                    while (size > 0)
-                    {
-                        byte[] buffer;
-                        if (size < current.ReceiveBufferSize)
-                        {
-                            buffer = new byte[size];
-                        }
-                        else
-                            buffer = new byte[current.ReceiveBufferSize];
-                           int rec = current.Receive(buffer, 0, buffer.Length, 0);
-                           size -= rec;
-                           ms.Write(buffer, 0, buffer.Length);
-                    }
-                    ms.Close();
-                    byte[] data = ms.ToArray();
-                    ms.Dispose();
-                    Invoke((MethodInvoker)delegate
-                    {
-                        txtChatBox.Text = Encoding.Default.GetString(data);
-                    });
-                }
-
-            }).Start();
-            //if (text.ToLower() == "get time") // Client requested time
-            //{
-            //    Invoke(DelegateModifyText, "Text is a 'get time' request");
-            //    byte[] data = Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString());
-            //    current.Send(data);
-            //    Invoke(DelegateModifyText, "Time sent to client");
-            //}
-            //else if (text.ToLower() == "exit") // Client wants to exit gracefully
-            //{
-            //    // Always Shutdown before closing
-            //    current.Shutdown(SocketShutdown.Both);
-            //    current.Close();
-            //    _listSocket.Remove(current);
-            //    Invoke(DelegateModifyText, "Client disconnected");
-            //    return;
-            //}
-            //else
-            //{
-            //    //Invoke(DelegateModifyText,("Text is an invalid request");
-            //    //byte[] data = Encoding.ASCII.GetBytes("Invalid function request");
-            //    //current.Send(data);
-            //    //Invoke(DelegateModifyText,("Warning Sent");
-            //}
-            //Action<string> DelegateModifyText = ThreadMod;
-            //Socket current = (Socket)AR.AsyncState;
-            ////int counter = 1;
-            //SocketClient client = new SocketClient(current);
-            //int received;
-            //try
-            //{
-            //    received = current.EndReceive(AR);
-            //}
-            //catch (SocketException)
-            //{
-            //    Invoke(DelegateModifyText, "Client forcefully disconnected");
-            //    current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
-            //    _listSocket.Remove(current);
-            //    return;
-            //}
-            //if (current.Connected)
-            //{
-            //    byte[] incomingMessage = new byte[received];
-            //    string message = Encoding.ASCII.GetString(incomingMessage);
-            //    Array.Copy(_buffer, incomingMessage, received);
-            //    //Invoke(DelegateModifyText, message);
-            //    Invoke(DelegateModifyText, message);
-            //    //txtChatBox.Text = txtChatBox.Text + message;
-            //    if (message.Contains("@#"))
-            //    {
-            //        dictionary.Add(counter, _serverSocket);
-            //        clientList.Add(client);
-
-            //    }
-
-            //}
-            //current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);
-
+            ////new Thread(() =>
+            ////{
+            ////    while (true)
+            ////    {
+            ////        byte[] sizeBuf = new byte[4];
+            ////        current.Receive(sizeBuf, 0, sizeBuf.Length, 0);
+            ////        int size = BitConverter.ToInt32(sizeBuf, 0);
+            ////        MemoryStream ms = new MemoryStream();  //holds data for buffer we recieve
+            ////        while (size > 0)
+            ////        {
+            ////            byte[] buffer;
+            ////            if (size < current.ReceiveBufferSize)
+            ////            {
+            ////                buffer = new byte[size];
+            ////            }
+            ////            else
+            ////                buffer = new byte[current.ReceiveBufferSize];
+            ////               int rec = current.Receive(buffer, 0, buffer.Length, 0);
+            ////               size -= rec;
+            ////               ms.Write(buffer, 0, buffer.Length);
+            ////        }
+            ////        ms.Close();
+            ////        byte[] data = ms.ToArray();
+            ////        ms.Dispose();
+            ////        Invoke((MethodInvoker)delegate
+            ////        {
+            ////            txtChatBox.Text = Encoding.Default.GetString(data);
+            ////        });
+            ////    }
+            ////}).Start();
         }
-
+        private void ClientDisconnect(Socket socket)
+        {
+            string clearSocket = "";
+            foreach(string name in dictionary.Keys) 
+            {
+                if (_listSocket.Count == dictionary.Count)              //if its not in here, remove it
+                {
+                    clearSocket = name;
+                }
+            }
+                    dictionary.Remove(clearSocket);
+            for (int i = 0; i < checkListUser.Items.Count; i++)
+            {
+                if (clearSocket.Contains(checkListUser.Items[i].ToString()))
+                {
+                    checkListUser.Items.RemoveAt(i);
+                }
+            }
+        }
         private void txtUser_TextChanged(object sender, EventArgs e)
         {
             
@@ -342,17 +262,27 @@ namespace MessagingApplicationServer
             string s = serverName + txtUser.Text;
             byte[] message = Encoding.ASCII.GetBytes(s);
 
-            for (int i = 0; i < clientList.Count; i++)
+            foreach (string numKey in dictionary.Keys)
             {
-                foreach (object itemChecked in checkListUser.CheckedItems)
+                for (int i = 1; i <= checkListUser.Items.Count; i++)
                 {
-                    clientList[i]._Socket.Send(message, 0, message.Length, SocketFlags.None);
-                    
+                    if(numKey.Contains(checkListUser.Items[i - 1].ToString()))
+                    {
+                        if (checkListUser.GetItemChecked(i - 1))
+                        {
+                            //clientList[i]._Socket.Send(message, 0, message.Length, 0);
+                            dictionary[numKey].Send(message, 0, message.Length, 0);
+
+                        }
+                    }
                 }
 
             }
             txtUser.Clear();
+            //byte[] data = Encoding.Default.GetBytes(txtUser.Text);
+            //_serverSocket.Send(data, 0, data.Length, 0);
         }
+
         private void SendData(Socket client, string dataSend)
         {
             
