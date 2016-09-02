@@ -243,6 +243,37 @@ namespace MessagingApplicationServer
                 //txtUser.Text = checkedItems;
             }
             current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    byte[] sizeBuf = new byte[4];
+                    current.Receive(sizeBuf, 0, sizeBuf.Length, 0);
+                    int size = BitConverter.ToInt32(sizeBuf, 0);
+                    MemoryStream ms = new MemoryStream();  //holds data for buffer we recieve
+                    while (size > 0)
+                    {
+                        byte[] buffer;
+                        if (size < current.ReceiveBufferSize)
+                        {
+                            buffer = new byte[size];
+                        }
+                        else
+                            buffer = new byte[current.ReceiveBufferSize];
+                           int rec = current.Receive(buffer, 0, buffer.Length, 0);
+                           size -= rec;
+                           ms.Write(buffer, 0, buffer.Length);
+                    }
+                    ms.Close();
+                    byte[] data = ms.ToArray();
+                    ms.Dispose();
+                    Invoke((MethodInvoker)delegate
+                    {
+                        txtChatBox.Text = Encoding.Default.GetString(data);
+                    });
+                }
+
+            }).Start();
             //if (text.ToLower() == "get time") // Client requested time
             //{
             //    Invoke(DelegateModifyText, "Text is a 'get time' request");
