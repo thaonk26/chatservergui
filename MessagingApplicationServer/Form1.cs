@@ -40,9 +40,9 @@ namespace MessagingApplicationServer
         //IPEndPoint ip = new IPEndPoint(IPAddress.Any, PortNumber);
         //Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static Socket _serverSocket;
-        private static readonly List<Socket> _clientSockets = new List<Socket>();
+        private static readonly List<Socket> _listSocket = new List<Socket>();
         private const int _BUFFER_SIZE = 2048;
-        private const int _PORT = 12000;
+        private const int _Port = 12000;
         private static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
         string serverName = "Server Master: ";
         private const int counter = 0;
@@ -157,10 +157,8 @@ namespace MessagingApplicationServer
             Action<string> DelegateModifyText = ThreadMod;
             Invoke(DelegateModifyText, "Setting up server...");
             _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, _PORT));
+            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, _Port));
             _serverSocket.Listen(5);
-            string serverResponse = "Recieved! \n";
-            byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
             _serverSocket.BeginAccept(AcceptCallback, null);
             Invoke(DelegateModifyText, "Server setup complete");
         }
@@ -177,7 +175,7 @@ namespace MessagingApplicationServer
                 return;
             }
             checkListUser.Items.Add(socket.RemoteEndPoint.ToString());
-            _clientSockets.Add(socket);
+            _listSocket.Add(socket);
             socket.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
             Invoke(DelegateModifyText, "Client connected, waiting for request...");
             _serverSocket.BeginAccept(AcceptCallback, null);
@@ -202,7 +200,7 @@ namespace MessagingApplicationServer
             {
                 Invoke(DelegateModifyText, "Client forcefully disconnected");
                 current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
-                _clientSockets.Remove(current);
+                _listSocket.Remove(current);
                 return;
             }
 
@@ -221,7 +219,10 @@ namespace MessagingApplicationServer
                         {
                             checkListUser.Items.RemoveAt(clientList.Count -1);
                             checkListUser.Items.Insert(0, text.Substring(2, text.Length - 2));
-                            dictionary.Add(clientList.Count, current);                    
+                            dictionary.Add(clientList.Count, current);
+                            string serverResponse = "Welcome to Nate's Server! \n";
+                            byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
+                            current.Send(sendBytes, 0, sendBytes.Length, 0);
                         }                    
                     }
                 }
@@ -254,7 +255,7 @@ namespace MessagingApplicationServer
             //    // Always Shutdown before closing
             //    current.Shutdown(SocketShutdown.Both);
             //    current.Close();
-            //    _clientSockets.Remove(current);
+            //    _listSocket.Remove(current);
             //    Invoke(DelegateModifyText, "Client disconnected");
             //    return;
             //}
@@ -278,7 +279,7 @@ namespace MessagingApplicationServer
             //{
             //    Invoke(DelegateModifyText, "Client forcefully disconnected");
             //    current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
-            //    _clientSockets.Remove(current);
+            //    _listSocket.Remove(current);
             //    return;
             //}
             //if (current.Connected)
@@ -315,6 +316,7 @@ namespace MessagingApplicationServer
                 foreach (object itemChecked in checkListUser.CheckedItems)
                 {
                     clientList[i]._Socket.Send(message, 0, message.Length, SocketFlags.None);
+                    
                 }
 
             }
@@ -325,7 +327,7 @@ namespace MessagingApplicationServer
             
             //Socket client = socket.Accept();
             //NetworkStream networkStream = clientSocket.GetStream();
-            //_serverSocket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _clientSockets);
+            //_serverSocket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _listSocket);
             //_serverSocket.Send(message);                  
             //client.Send(message, 0);
             //networkStream.Write(message, 0, message.Length);
