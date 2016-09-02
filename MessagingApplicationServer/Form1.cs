@@ -138,7 +138,7 @@ namespace MessagingApplicationServer
             {
                 return;
             }
-            checkListUser.Items.Add(socket.RemoteEndPoint.ToString());
+            //checkListUser.Items.Add(socket.RemoteEndPoint.ToString());
             _listSocket.Add(socket);
             socket.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
             Invoke(DelegateModifyText, "Client connected");
@@ -158,7 +158,7 @@ namespace MessagingApplicationServer
             catch (SocketException)
             {
                 Invoke(DelegateModifyText, "Client forcefully disconnected");
-                ClientDisconnect(current);
+                ClientDisconnect();
                 current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
                 _listSocket.Remove(current);
                 return;
@@ -176,10 +176,10 @@ namespace MessagingApplicationServer
                     {
                         if (clientList.Count != dictionary.Count)
                         {
-                            checkListUser.Items.RemoveAt(clientList.Count -1);
+                            //checkListUser.Items.RemoveAt(clientList.Count -1);
                             checkListUser.Items.Insert(0, text.Substring(2, text.Length - 2));
                             dictionary.Add(text, current);
-
+                            
                             string serverResponse = "Welcome to Nate's Server! \n";
                             byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
                             current.Send(sendBytes, 0, sendBytes.Length, 0);
@@ -234,7 +234,7 @@ namespace MessagingApplicationServer
             ////    }
             ////}).Start();
         }
-        private void ClientDisconnect(Socket socket)
+        private void ClientDisconnect()
         {
             string clearSocket = "";
             foreach(string name in dictionary.Keys) 
@@ -245,11 +245,13 @@ namespace MessagingApplicationServer
                 }
             }
                     dictionary.Remove(clearSocket);
+            
             for (int i = 0; i < checkListUser.Items.Count; i++)
             {
                 if (clearSocket.Contains(checkListUser.Items[i].ToString()))
                 {
                     checkListUser.Items.RemoveAt(i);
+                    clientList.RemoveAt(i);
                 }
             }
         }
