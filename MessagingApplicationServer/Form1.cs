@@ -104,9 +104,12 @@ namespace MessagingApplicationServer
                         {
                             checkListUser.Items.Insert(0, text.Substring(2, text.Length - 2));
                             dictionary.Add(text, current);
+                            ASCIIEncoding ascii = new ASCIIEncoding();
                             string serverResponse = "Welcome to Nate's Server! \n";
-                            byte[] sendBytes = Encoding.ASCII.GetBytes(serverResponse);
+                            byte[] sendBytes = ascii.GetBytes(serverResponse);
+                            //current.Send(sendBytes, 0, sendBytes.Length, 0);                
                             current.Send(sendBytes, 0, sendBytes.Length, 0);
+                            SendClientName();                       
                         }
                     }
                 }
@@ -141,6 +144,7 @@ namespace MessagingApplicationServer
         private void buttonSend_Click(object sender, EventArgs e)
         {
             SendData();
+            //SendClientName();
         }
         private void SendData()
         {
@@ -163,6 +167,22 @@ namespace MessagingApplicationServer
             }
             txtUser.Clear();
         }
+        public void SendClientName()
+        {
+            byte[] recBuf = new byte[bufferSize];
+            Array.Copy(_buffer, recBuf, bufferSize);
+            string text = Encoding.ASCII.GetString(recBuf);
+            ASCIIEncoding ascii = new ASCIIEncoding();
+            foreach (string numKey in dictionary.Keys)
+            {
+                string s = text;// + "has Connected";
+                byte[] list = ascii.GetBytes(s);
+                //current.Send(list, 0, list.Length, 0);
+                dictionary[numKey].Send(list, 0, list.Length, 0);
+            }
+            recBuf = null;
+            text = null;
+        }
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
         {
         }
@@ -183,5 +203,6 @@ namespace MessagingApplicationServer
             txtChatBox.SelectionStart = txtChatBox.Text.Length;
             txtChatBox.ScrollToCaret();
         }
+
     }
 }
