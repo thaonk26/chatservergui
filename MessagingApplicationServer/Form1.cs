@@ -179,9 +179,8 @@ namespace MessagingApplicationServer
                 byte[] list = ascii.GetBytes(s);
                 //current.Send(list, 0, list.Length, 0);
                 dictionary[numKey].Send(list, 0, list.Length, 0);
+                
             }
-            recBuf = null;
-            text = null;
         }
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
         {
