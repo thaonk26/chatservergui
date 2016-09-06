@@ -85,7 +85,7 @@ namespace MessagingApplicationServer
             catch (SocketException)
             {
                 ClientDisconnect(current);
-                current.Close(); // Dont shutdown because the socket may be disposed and its disconnected anyway
+                current.Close(); 
                 _listSocket.Remove(current);
                 return;
             }
@@ -122,7 +122,7 @@ namespace MessagingApplicationServer
             string clearSocket = "";
             foreach (string name in dictionary.Keys)
             {
-                if (dictionary[name] == socket)              //if its not in here, remove it
+                if (dictionary[name] == socket)          
                 {
                     clearSocket = name;
                 }
@@ -144,7 +144,6 @@ namespace MessagingApplicationServer
         private void buttonSend_Click(object sender, EventArgs e)
         {
             SendData();
-            //SendClientName();
         }
         private void SendData()
         {
@@ -175,9 +174,7 @@ namespace MessagingApplicationServer
             ASCIIEncoding ascii = new ASCIIEncoding();
             foreach (string numKey in dictionary.Keys)
             {
-                string s = text;// + "has Connected";
-                byte[] list = ascii.GetBytes(s);
-                //current.Send(list, 0, list.Length, 0);
+                byte[] list = ascii.GetBytes(text);
                 dictionary[numKey].Send(list, 0, list.Length, 0);
                 
             }

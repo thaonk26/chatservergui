@@ -19,10 +19,8 @@ namespace MessagingApplicationServer
         //}
         public void Add(int value)
         {
-            //non-recursive add
             if(top == null) //tree is empty
             {
-                //add item as the base node
                 Node NewNode = new Node(value);
                 top = NewNode;
                 return;
@@ -31,7 +29,6 @@ namespace MessagingApplicationServer
             bool added = false;
             do
             {
-                //traverse tree
                 if(value < currentNode.value)
                 {
                     if(currentNode.left == null)
@@ -61,12 +58,10 @@ namespace MessagingApplicationServer
         }
         public void AddRecursive(int value)
         {
-            //recursive add
             AddRecursiveValue(ref top, value);
         }
         private void AddRecursiveValue(ref Node N, int value)
         {
-            //private recursive search for where to add the new node
             if(N == null)
             {
                 Node newNode = new Node(value);
@@ -108,18 +103,18 @@ namespace MessagingApplicationServer
         {
             Node current = top;
             Node parent = top;
-            bool isleftChild = true;
+            bool isLeftChild = true;
             while (current.value != key)
             {
                 parent = current;
                 if (key < current.value)
                 {
-                    isleftChild = true;
+                    isLeftChild = true;
                     current = current.left;
                 }
                 else
                 {
-                    isleftChild = false;
+                    isLeftChild = false;
                     current = current.right;
                 }
                 if (current == null)
@@ -134,7 +129,7 @@ namespace MessagingApplicationServer
                 {
                     top = null;
                 }
-                else if (isleftChild)
+                else if (isLeftChild)
                 {
                     parent.left = null;
                 }
@@ -149,7 +144,7 @@ namespace MessagingApplicationServer
                 {
                     top = current.left;
                 }
-                else if (isleftChild)
+                else if (isLeftChild)
                 {
                     parent.left = current.left;
                 }
@@ -164,7 +159,7 @@ namespace MessagingApplicationServer
                 {
                     top = current.right;
                 }
-                else if (isleftChild)
+                else if (isLeftChild)
                 {
                     parent.left = parent.right;
                 }
@@ -180,7 +175,7 @@ namespace MessagingApplicationServer
                 {
                     top = successor;
                 }
-                else if (isleftChild)
+                else if (isLeftChild)
                 {
                     parent.left = successor;
                 }
@@ -193,49 +188,9 @@ namespace MessagingApplicationServer
             return true;
         }
     
-    //public void DeleteN(int N)
-    //{
-    //    Node deleteNode = new Node(N);
-    //    DeleteNode(top, deleteNode);
-    //}
-    //private Node DeleteNode(Node top, Node deleteNode)
-    //{
-    //    if(top == null)
-    //    {
-    //        return top;
-    //    }
-    //    if(deleteNode.value < top.value)
-    //    {
-    //        top.left = DeleteNode(top.left, deleteNode);
-    //    }
-    //    if(deleteNode.value > top.value)
-    //    {
-    //        top.right = DeleteNode(top.right, deleteNode);
-    //    }
-    //    if(deleteNode.value == top.value)
-    //    {
-    //        if(top.left == null && top.right == null)
-    //        {
-    //            top = null;
-    //            return top;
-    //        }else if(top.left == null)
-    //        {
-    //            Node temporary = top;
-    //            top = top.right;
-    //            temporary = null;
-    //        }else if(top.right == null)
-    //        {
-    //            Node temporary = top;
-    //            top = top.left;
-    //            temporary = null;
-    //        }
-    //    }
-    //    return top;
-    //}
+  
     public void Print(Node N,ref string newString)
         {
-            //write out the tree in sorded order
-            //recursive of print
             if(N == null) { N = top; }
             if(N.left != null)
             {
